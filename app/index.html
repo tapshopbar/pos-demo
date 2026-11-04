@@ -3,7 +3,7 @@
 <div class="box"><h1>TSB POS MVP 데모</h1><p>탭샵바 사내 데모입니다. 실제 결제·발송 없음.<br>전달받은 비밀번호를 입력하세요. (PC 크롬 권장)</p>
 <form id="f"><input id="pw" type="password" placeholder="비밀번호" autofocus autocomplete="current-password"><button type="submit">열기</button></form><div id="m"></div></div>
 <script>
-const CACHE='tsb-pos-demo-unlocked-v1';
+const CACHE='tsb-pos-demo-unlocked-v2';
 const ct={'html':'text/html; charset=utf-8'};
 document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('m');
  if(!('serviceWorker' in navigator)||!window.crypto?.subtle){m.textContent='이 브라우저에서는 열 수 없어요. PC 크롬으로 열어 주세요.';return}
