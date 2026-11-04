@@ -1,0 +1,22 @@
+<!doctype html><html lang="ko"><head><meta name="robots" content="noindex,nofollow"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TSB POS MVP 데모 (사내용)</title>
+<style>body{font-family:-apple-system,Pretendard,sans-serif;background:#141413;color:#FAF9F5;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}.box{background:#1f1f1e;border:1px solid #D97757;border-radius:14px;padding:32px;width:360px}h1{font-size:19px;margin:0 0 6px}p{font-size:13px;color:#b5b3ab;margin:0 0 18px;line-height:1.6}input{width:100%;box-sizing:border-box;padding:12px;border-radius:8px;border:1px solid #444;background:#141413;color:#fff;font-size:15px}button{width:100%;margin-top:12px;padding:12px;border:0;border-radius:8px;background:#D97757;color:#fff;font-size:15px;font-weight:700;cursor:pointer}#m{font-size:13px;color:#F0A487;min-height:18px;margin-top:10px}</style></head><body>
+<div class="box"><h1>TSB POS MVP 데모</h1><p>탭샵바 사내 데모입니다. 실제 결제·발송 없음.<br>전달받은 비밀번호를 입력하세요. (PC 크롬 권장)</p>
+<form id="f"><input id="pw" type="password" placeholder="비밀번호" autofocus autocomplete="current-password"><button type="submit">열기</button></form><div id="m"></div></div>
+<script>
+const CACHE='tsb-pos-demo-unlocked-v1';
+const ct={'html':'text/html; charset=utf-8'};
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('m');
+ if(!('serviceWorker' in navigator)||!window.crypto?.subtle){m.textContent='이 브라우저에서는 열 수 없어요. PC 크롬으로 열어 주세요.';return}
+ m.textContent='여는 중… (처음 한 번 5~10초)';
+ try{const buf=new Uint8Array(await (await fetch('bundle.enc',{cache:'no-store'})).arrayBuffer());
+  const salt=buf.slice(0,16),iv=buf.slice(16,28),data=buf.slice(28);
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(document.getElementById('pw').value),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  let plain; try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data)}catch(_){m.textContent='비밀번호가 맞지 않아요.';return}
+  const files=JSON.parse(new TextDecoder().decode(plain));
+  const reg=await navigator.serviceWorker.register('lock-sw.js',{scope:'./'}); await navigator.serviceWorker.ready;
+  const c=await caches.open(CACHE); const baseP=location.pathname.replace(/index\.html$/,'').replace(/[^/]*$/,'');
+  await Promise.all(Object.entries(files).map(([p,f])=>{const bin=Uint8Array.from(atob(f.b),ch=>ch.charCodeAt(0));return c.put(baseP+p,new Response(bin,{headers:{'Content-Type':f.t}}))}));
+  m.textContent='열렸어요. 이동합니다…'; setTimeout(()=>location.replace(baseP),400);
+ }catch(err){m.textContent='열기 실패: '+err.message}};
+</script></body></html>
