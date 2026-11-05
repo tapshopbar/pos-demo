@@ -1,19 +1,23 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TSB × 대정 파트너 발주 (베타)</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAF9F5;font-family:Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;color:#141413}.b{width:min(380px,92vw);background:#fff;border:1px solid #E8E4DA;border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(20,27,51,.06)}.t{font-weight:900;color:#4A0B18;font-size:19px}.s{display:inline-block;font-size:11.5px;font-weight:700;color:#6B6A63;border:1px solid #E8E4DA;border-radius:999px;padding:2px 8px;margin-left:6px}h1{font-size:17px;margin:16px 0 6px;color:#141B33}p{font-size:13px;color:#6B6A63;line-height:1.6;margin:0 0 16px}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #DDD7CB;border-radius:10px;font-size:15px}button{width:100%;margin-top:10px;padding:12px;border:0;border-radius:10px;background:#4A0B18;color:#fff;font-size:15px;font-weight:700;cursor:pointer}#m{font-size:12.5px;color:#9C3A26;min-height:18px;margin-top:10px}</style></head><body>
-<div class="b"><span class="t">TSB × 대정</span><span class="s">파트너 발주 · 베타</span><h1>윤남식 이사님 전용 미리보기</h1><p>전달받은 비밀번호를 넣어 주세요.<br>PC 크롬에서 보시면 가장 잘 보여요.</p>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAF9F5;font-family:Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;color:#141413}.b{width:min(380px,92vw);background:#fff;border:1px solid #E8E4DA;border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(20,27,51,.06)}.t{font-weight:900;color:#4A0B18;font-size:19px}.s{display:inline-block;font-size:11.5px;font-weight:700;color:#6B6A63;border:1px solid #E8E4DA;border-radius:999px;padding:2px 8px;margin-left:6px}h1{font-size:17px;margin:16px 0 6px;color:#141B33}p{font-size:13px;color:#6B6A63;line-height:1.6;margin:0 0 16px}.e{font-size:12.5px;font-weight:700;color:#4A0B18;background:#FCF7F6;border-radius:8px;padding:6px 10px;margin:0 0 14px}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #DDD7CB;border-radius:10px;font-size:15px}button{width:100%;margin-top:10px;padding:12px;border:0;border-radius:10px;background:#4A0B18;color:#fff;font-size:15px;font-weight:700;cursor:pointer}#m{font-size:12.5px;color:#9C3A26;min-height:18px;margin-top:10px}</style></head><body>
+<div class="b"><span class="t">TSB × 대정</span><span class="s">파트너 발주 · 베타</span><h1>윤남식 이사님 전용 미리보기</h1><p>전달받은 비밀번호를 넣어 주세요.<br>PC 크롬에서 보시면 가장 잘 보여요.</p><div class="e">11월 6일(금) 밤 11:59까지 열려요</div>
 <form id="f"><input id="pw" type="password" placeholder="비밀번호" autofocus autocomplete="current-password"><button>열기</button></form><div id="m"></div></div>
 <script>
-const SK='tsb-partner-dj-open';
+const SK='tsb-partner-dj-open', MSG="베타 미리보기 시간이 끝났어요 (11월 6일(금) 밤 11:59까지). 더 보시려면 탭샵바에 말씀해 주세요.";
 function show(h){document.open();document.write(h);document.close()}
-const c=sessionStorage.getItem(SK); if(c) show(c);
+async function now(r){let t=Date.now();try{const d=Date.parse((r||await fetch('index.html',{method:'HEAD',cache:'no-store'})).headers.get('date'));if(d)t=Math.max(t,d)}catch(_){}return t}
+(async()=>{const c=sessionStorage.getItem(SK);if(!c)return;try{const o=JSON.parse(c);if(await now()<=Date.parse(o.exp))show(o.html);else{sessionStorage.removeItem(SK);document.getElementById('m').textContent=MSG}}catch(_){sessionStorage.removeItem(SK)}})();
 document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('m');
  if(!window.crypto||!crypto.subtle){m.textContent='이 브라우저에서는 열 수 없어요. PC 크롬으로 열어 주세요.';return}
  m.style.color='#6B6A63';m.textContent='여는 중…';
- try{const buf=new Uint8Array(await (await fetch('app.enc',{cache:'no-store'})).arrayBuffer());
+ try{const r=await fetch('app.enc',{cache:'no-store'});if(!r.ok){m.style.color='#9C3A26';m.textContent=MSG;return}
+  const buf=new Uint8Array(await r.arrayBuffer());
   const salt=buf.slice(0,16),iv=buf.slice(16,28),data=buf.slice(28);
   const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(document.getElementById('pw').value.trim()),'PBKDF2',false,['deriveKey']);
   const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
   let p;try{p=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data)}catch(_){m.style.color='#9C3A26';m.textContent='비밀번호가 맞지 않아요.';return}
-  const h=new TextDecoder().decode(p); try{sessionStorage.setItem(SK,h)}catch(_){} show(h);
+  const o=JSON.parse(new TextDecoder().decode(p));
+  if(await now(r)>Date.parse(o.exp)){m.style.color='#9C3A26';m.textContent=MSG;return}
+  try{sessionStorage.setItem(SK,JSON.stringify(o))}catch(_){} show(o.html);
  }catch(err){m.style.color='#9C3A26';m.textContent='열기 실패: '+err.message}};
 </script></body></html>
