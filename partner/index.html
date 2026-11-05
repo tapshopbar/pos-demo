@@ -3,6 +3,8 @@
 <div class="b"><span class="t">TSB × 대정</span><span class="s">파트너 발주 · 베타</span><h1>윤남식 이사님 전용 미리보기</h1><p>전달받은 비밀번호를 넣어 주세요.<br>PC 크롬에서 보시면 가장 잘 보여요.</p><div class="e">11월 6일(금) 밤 11:59까지 열려요</div>
 <form id="f"><input id="pw" type="password" placeholder="비밀번호" autofocus autocomplete="current-password"><button>열기</button></form><div id="m"></div></div>
 <script>
+if(!location.pathname.endsWith('/')&&!/\.html$/.test(location.pathname))history.replaceState(null,'',location.pathname+'/'+location.search);
+const ENC=location.pathname.replace(/[^/]*$/,'')+'app.enc';
 const SK='tsb-partner-dj-open', MSG="베타 미리보기 시간이 끝났어요 (11월 6일(금) 밤 11:59까지). 더 보시려면 탭샵바에 말씀해 주세요.";
 function show(h){document.open();document.write(h);document.close()}
 async function now(r){let t=Date.now();try{const d=Date.parse((r||await fetch('index.html',{method:'HEAD',cache:'no-store'})).headers.get('date'));if(d)t=Math.max(t,d)}catch(_){}return t}
@@ -10,7 +12,7 @@ async function now(r){let t=Date.now();try{const d=Date.parse((r||await fetch('i
 document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('m');
  if(!window.crypto||!crypto.subtle){m.textContent='이 브라우저에서는 열 수 없어요. PC 크롬으로 열어 주세요.';return}
  m.style.color='#6B6A63';m.textContent='여는 중…';
- try{const r=await fetch('app.enc',{cache:'no-store'});if(!r.ok){m.style.color='#9C3A26';m.textContent=MSG;return}
+ try{const r=await fetch(ENC,{cache:'no-store'});if(r.status===404){m.style.color='#9C3A26';m.textContent=MSG;return}if(!r.ok){m.style.color='#9C3A26';m.textContent='잠시 후 다시 시도해 주세요 ('+r.status+')';return}
   const buf=new Uint8Array(await r.arrayBuffer());
   const salt=buf.slice(0,16),iv=buf.slice(16,28),data=buf.slice(28);
   const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(document.getElementById('pw').value.trim()),'PBKDF2',false,['deriveKey']);
